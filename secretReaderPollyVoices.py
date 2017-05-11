@@ -38,6 +38,7 @@ def main(argv):
 
 	# should check and make sure this is an int, and smaller than # of entries in file
 	num_secrets = int(argv[0])
+	print(language)
 
 	if language=='en':
 		# voiceIds = ['Joanna', 'Salli', 'Kimberly', 'Kendra', 'Amy', 'Ivy', 'Justin', 'Joey', 'Brian']
@@ -57,8 +58,8 @@ def main(argv):
 
 	# Load in secrets 
 	secrets = []
-	for line in open(datapath, 'r'):
-		secrets.append(json.loads(line))
+	with open(datapath) as data_file:    
+		secrets = json.load(data_file)
 
 	# only do this is num_secrets is valid and > 0	
 	# create a new folder with this timestamp to save the secret files in
@@ -76,7 +77,6 @@ def main(argv):
 		else:
 			idx = i
 		secret = utils.convertUnicode(secrets[idx])
-		secretText = secret['text']
 		pprint(secret)
 
 		# Choose voice
@@ -87,9 +87,14 @@ def main(argv):
 			voiceId = voice
 
 		# Prepare secret
-		if translate:
-			translation = translate_client.translate(secretText, target_language=target_lang, format_='text')
+		if translate_lang:
+			translation = translate_client.translate(secret['text'], target_language=target_lang, format_='text')
 			secretText = translation['translatedText']
+		elif language == 'it':
+			secretText = secret['italianString']
+		elif language == 'de':
+			secretText = secret['germanString']
+
 		if ssml:
 			secretText = utils.createSSML(secretText, sentencePause=True, whisper=False)
 		else:

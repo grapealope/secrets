@@ -28,16 +28,25 @@ def createSSML(text, sentencePause=True, whisper=False):
 	return text
 
 # Take in a csv file with translated secrets, append these to existing JSON for secrets
-def addTranslatedSecretsToJSON(csvfile, secrets, fieldname, datapath_translate):
+def addTranslatedSecretsToJSON(csvfile, secrets, fieldname, datapath_translate, compact=True):
 	with open(csvfile) as f:
 		reader = csv.reader(f)
 		headers = next(reader)
 		for idx, row in enumerate(reader):
 			print(idx, row[2])
 			secrets[idx][fieldname] = row[2]
-
-	with open(datapath_translate, 'w') as f:
-		json.dump(secrets, f, sort_keys=True, indent=4, separators=(',', ': '))
+			
+	# Write json to file
+	with open(datapath_translate, 'w') as f:	
+		# Compact: one dict per line	
+		if compact:
+			# Separate dicts by commas and new lines
+			strs = [json.dumps(secretdict, sort_keys=True) for secretdict in secrets]
+			s = "[%s]" % ",\n".join(strs)		
+			f.write(s)
+		else:
+			# Each field gets its own line
+			json.dump(secrets, f, sort_keys=True, indent=4, separators=(',', ': ')) 
 
 # Take in secrets, translate to specified language and export to a csv
 def translateToCSV(secrets, csvfile, target_lang):
@@ -62,17 +71,13 @@ def translateToCSV(secrets, csvfile, target_lang):
 						secret['text'], 
 						secretText.encode("utf-8")])
 
-# Convert unicode for internal processing 
-def convertUnicode(data):
-	if isinstance(data, string_types):		
-		return str(data)
-	elif isinstance(data, collections.Mapping):
-		if sys.version_info[0] == 2:
-			return dict(map(convertUnicode, data.iteritems()))
-		else:
-			return dict(map(convertUnicode, data.items()))
-	elif isinstance(data, collections.Iterable):
-		return type(data)(map(convertUnicode, data))
+def convertUnicode(input):
+	if isinstance(input, dict):
+		return {convertUnicode(key): convertUnicode(value)
+				for key, value in input.iteritems()}
+	elif isinstance(input, list):
+		return [convertUnicode(element) for element in input]
+	elif isinstance(input, unicode):
+		return input.encode('utf-8')
 	else:
-		return data
-
+		return input
