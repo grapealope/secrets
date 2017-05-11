@@ -35,7 +35,7 @@ def addTranslatedSecretsToJSON(csvfile, secrets, fieldname, datapath_translate, 
 		for idx, row in enumerate(reader):
 			print(idx, row[2])
 			secrets[idx][fieldname] = row[2]
-			
+
 	# Write json to file
 	with open(datapath_translate, 'w') as f:	
 		# Compact: one dict per line	
@@ -81,3 +81,21 @@ def convertUnicode(input):
 		return input.encode('utf-8')
 	else:
 		return input
+
+# Take in a filename (including path), increment index at end if file already exists
+def createUniqueFilename(fname):
+	if os.path.isfile(fname):
+		unique_fname = False		
+		idx = 0
+		f_base = os.path.splitext(fname)[0]
+		f_ext = os.path.splitext(fname)[1]
+		while unique_fname is False:
+			new_name = '{}-{}{}'.format(f_base, idx, f_ext)
+			print(idx, new_name)
+			if not os.path.isfile(new_name):
+				unique_fname = True
+			else:
+				idx+=1
+		return new_name
+	else:
+		return fname
