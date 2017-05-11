@@ -9,7 +9,7 @@ import glob
 import utils
 from pydub import AudioSegment
 
-def concatMp3(mp3dir, file_padding=500):
+def concatMp3(mp3dir, file_name='mergedSecrets', file_padding=500):
 	os.chdir(mp3dir)
 	audio_secrets = [AudioSegment.from_mp3(mp3_file) for mp3_file in glob.glob("secret-*.mp3")]
 
@@ -19,7 +19,7 @@ def concatMp3(mp3dir, file_padding=500):
 	for secret in audio_secrets:
 		merged_secrets = merged_secrets + secret + silent_buffer
 
-	fname = utils.createUniqueFilename(mp3dir + 'mergedSecrets.mp3')
+	fname = utils.createUniqueFilename(mp3dir + file_name + '.mp3')
 
 	with open(fname, 'wb') as f:
 		merged_secrets.export(fname, format='mp3')

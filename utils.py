@@ -91,7 +91,6 @@ def createUniqueFilename(fname):
 		f_ext = os.path.splitext(fname)[1]
 		while unique_fname is False:
 			new_name = '{}-{}{}'.format(f_base, idx, f_ext)
-			print(idx, new_name)
 			if not os.path.isfile(new_name):
 				unique_fname = True
 			else:
@@ -99,3 +98,4 @@ def createUniqueFilename(fname):
 		return new_name
 	else:
 		return fname
+
