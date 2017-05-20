@@ -11,6 +11,7 @@ import csv
 import collections
 import random
 import datetime
+import re
 from pprint import pprint
 from six import string_types
 from nltk import tokenize
@@ -19,6 +20,7 @@ from google.cloud import translate
 # Take in text, create SSML version (synthetic speech markup language) for use 
 # with Amazon's Polly API
 def createSSML(text, sentencePause=True, whisper=False):
+	text = stripInvalidSymbols(text)
 	if sentencePause:
 		sentences = tokenize.sent_tokenize(text)		
 		sentenceBreak = '<break strength="x-strong"/>'
@@ -26,6 +28,13 @@ def createSSML(text, sentencePause=True, whisper=False):
 	if whisper:
 		text = '<amazon:effect name="whispered">{}</amazon:effect>'.format(text)
 	text = '<speak>{}</speak>'.format(text)
+	return text
+
+# Strip or replace invalid symbols for SSML
+def stripInvalidSymbols(text):
+	text = re.sub('<3', '', text)
+	text = re.sub('&','and', text)
+	text = re.sub('[<>]', '', text)
 	return text
 
 # Take in a csv file with translated secrets, append these to existing JSON for secrets

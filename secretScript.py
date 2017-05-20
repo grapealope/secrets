@@ -32,8 +32,6 @@ with open(datapath) as data_file:
 italian_secrets = [secret for secret in secrets if secret['language'] == 'it' and secret['publish']]
 english_secrets = [secret for secret in secrets if secret['language'] == 'en' and secret['publish']]
 
-# Note: secret 137 breaks the code with its <3, kludgey fix for now
-english_secrets[137]['englishString'] = 'I still love my first love'
 
 # ------------------------------------------ #
 # English 
@@ -45,6 +43,9 @@ speakSecrets(english_secrets[70:140], voiceIds, createTimestampedDir(mp3path_bas
 speakSecrets(english_secrets[140:210], voiceIds, createTimestampedDir(mp3path_base), randVoice=True)
 speakSecrets(english_secrets[210:280], voiceIds, createTimestampedDir(mp3path_base), randVoice=True)
 speakSecrets(english_secrets[280:], voiceIds, createTimestampedDir(mp3path_base), randVoice=True)
+
+speakSecrets(english_secrets[137:138], voiceIds, createTimestampedDir(mp3path_base), randVoice=True)
+speakSecrets(english_secrets[138:139], voiceIds, createTimestampedDir(mp3path_base), randVoice=True)
 
 
 # ------------------------------------------ #
