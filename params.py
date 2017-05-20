@@ -13,7 +13,11 @@ mp3path_base = '/Users/kalmar/Documents/code/secrets/audio/'		  # Where to store
 shuffleSecrets = False		# Shuffle the order of the secrets?
 speak = True				# Speak secrets?
 ssml = True					# Use speech synthesis markup language?
+whisperFreq = 0.1			# What percentage of the secrets should be whispered?
 mp3_padding = 1500			# Buffer between mp3 files, for concatenated mp3
+concatSecretMp3s = True     # Concatenate the individual mp3 files in a group
+
+datapath = '/Users/kalmar/Documents/code/secrets/secrets_data/secrets_edit_rk.json'
 
 # ------------------------------------ #
 # Set language and translation params

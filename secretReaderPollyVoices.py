@@ -17,7 +17,7 @@ from six import string_types
 from boto3 import Session
 from botocore.exceptions import BotoCoreError, ClientError
 from contextlib import closing
-from pollySpeak import newSession, pollySpeech
+from pollySpeak import newSession, pollySpeech, speakSecrets
 from concatMp3 import concatMp3
 
 USAGE_TEXT = """
@@ -36,17 +36,9 @@ def main(argv):
 	if len(argv) < 1:
 		usage()
 
-	# should check and make sure this is an int, and smaller than # of entries in file
+	# should check and make sure this is an int
 	num_secrets = int(argv[0])
 	print(language)
-
-	if language=='en':
-		# voiceIds = ['Joanna', 'Salli', 'Kimberly', 'Kendra', 'Amy', 'Ivy', 'Justin', 'Joey', 'Brian']
-		voiceIds = ['Joanna', 'Kendra', 'Amy', 'Joey', 'Brian']		
-	elif language=='it':
-		voiceIds = ['Carla', 'Giorgio']
-	elif language=='de':
-		voiceIds = ['Marlene', 'Hans']
 
 	voice = argv[1]
 	if voice == 'random':
@@ -54,7 +46,7 @@ def main(argv):
 	else:
 		randVoice = False
 		if voice not in voiceIds:
-			voice = 'Joanna'
+			voice = voiceIds[0]
 
 	# Load in secrets 
 	secrets = []
@@ -62,62 +54,29 @@ def main(argv):
 		secrets = json.load(data_file)
 
 	# only do this is num_secrets is valid and > 0	
+	if len(secrets) == 0:
+		print('Error: no secrets loaded. Please check the file referenced in params.py.')
+		sys.exit(-1)
+	if num_secrets == 0:
+		print('Error: no secrets requested.')
+		usage()
+		sys.exit(-1)
+	if num_secrets > len(secrets):
+		print('Warning: number of secrets requested > number of secrets available ({} requested, {} available)'.format(num_secrets,len(secrets)))
+
 	# create a new folder with this timestamp to save the secret files in
-	now = datetime.datetime.now()
-	mp3path = '{}{}'.format(mp3path_base,now.strftime('%Y-%m-%d-%H-%M'))
-	os.mkdir(mp3path)
+	mp3path = utils.createTimestampedDir(mp3path_base)
 
-	# create a new session
-	polly = newSession()
-
-	for i in range(0, num_secrets):
-		# Choose a new secret 
-		if shuffleSecrets:
-			idx = random.randint(0,len(secrets))
-		else:
-			idx = i
-		secret = utils.convertUnicode(secrets[idx])
-		pprint(secret)
-
-		# Skip this secret if it isn't slated for publishing
-		if not secret['publish']:
-			continue
-
-		# Choose voice
-		if randVoice:
-			voiceId = random.choice(voiceIds)
-			print(voiceId)
-		else:
-			voiceId = voice
-
-		# Prepare secret
-		if translate_lang:
-			translation = translate_client.translate(secret['text'], target_language=target_lang, format_='text')
-			secretText = translation['translatedText']
-		elif language == 'it':
-			secretText = secret['italianString']
-		elif language == 'de':
-			secretText = secret['germanString']
-		elif language == 'en':
-			secretText = secret['englishString']
-
-		if ssml:
-			secretText = utils.createSSML(secretText, sentencePause=True, whisper=False)
-		else:
-			secretText = secret['text']
-
-		# Speak and record secret
-		pollySpeech(
-			polly,
-			text=secretText,
-			textType=textType,
-			voiceId=voiceId,
-			outputFile='{}/secret-{}'.format(mp3path,i),
-			speak=True)
-
-	# Merge all secret mp3s into one merged mp3
-	print('Now concatenating mp3s...')
-	concatMp3(mp3path + '/', mp3_padding)
+	speakSecrets(secrets[0:num_secrets], voiceIds, mp3path,
+				 shuffleSecrets=shuffleSecrets, 
+				 randVoice=randVoice, 
+				 translate_lang=translate_lang, 
+				 ssml=ssml, 
+				 whisperFreq=whisperFreq, 
+				 language=language, 
+				 target_lang=target_lang,
+				 concatSecretMp3s=concatSecretMp3s,
+				 mp3_padding=mp3_padding)
 
 if __name__ == "__main__":
 	main(sys.argv[1:])
