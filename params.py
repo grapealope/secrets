@@ -13,7 +13,7 @@ mp3path_base = '/Users/kalmar/Documents/code/secrets/audio/'		  # Where to store
 shuffleSecrets = False		# Shuffle the order of the secrets?
 speak = True				# Speak secrets?
 ssml = True					# Use speech synthesis markup language?
-mp3_padding = 500			# Buffer between mp3 files, for concatenated mp3
+mp3_padding = 1500			# Buffer between mp3 files, for concatenated mp3
 
 # ------------------------------------ #
 # Set language and translation params
@@ -26,6 +26,16 @@ language = 'it'
 
 target_lang = 'it'
 #target_lang = 'de'
+
+if language=='en':
+	# voiceIds = ['Joanna', 'Salli', 'Kimberly', 'Kendra', 'Amy', 'Ivy', 'Justin', 'Joey', 'Brian']
+	voiceIds = ['Joanna', 'Kendra', 'Amy', 'Joey', 'Brian']		
+elif language=='it':
+	voiceIds = ['Carla', 'Giorgio']
+elif language=='de':
+	voiceIds = ['Marlene', 'Hans']
+
+voice = voiceIds[0]
 
 # ------------------------------------ #
 # Set params based on options chosen above

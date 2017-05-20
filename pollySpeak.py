@@ -13,6 +13,9 @@ import subprocess
 from tempfile import gettempdir
 from pprint import pprint
 from playsound import playsound
+import utils
+import random
+from concatMp3 import concatMp3
 
 def newSession(profile='default'):
 	# Create a client using the credentials and region defined in the [adminuser]
@@ -55,6 +58,80 @@ def pollySpeech(polly, text='', outputFormat='mp3', voiceId='Joanna', outputFile
 		print("Could not stream audio")
 		sys.exit(-1)
 
+def speakSecrets(secrets, voiceIds, mp3path,
+				 shuffleSecrets=False, 
+				 randVoice=True, 
+				 translate_lang=False, 
+				 ssml=True, 
+				 whisperFreq=0.1, 
+				 language='en', 
+				 target_lang='en',
+				 concatSecretMp3s=True,
+				 mp3_padding=1500):
+						
+	# create a new session
+	polly = newSession()
+
+	if ssml:
+		textType = 'ssml'
+	else:
+		textType = 'text'
+
+	for i in range(0, len(secrets)):
+		# Choose a new secret 
+		if shuffleSecrets:
+			idx = random.randint(0,len(secrets))
+		else:
+			idx = i
+		secret = utils.convertUnicode(secrets[idx])
+		pprint(secret)
+
+		# Skip this secret if it isn't slated for publishing
+		if not secret['publish']:
+			continue
+
+		# Choose voice
+		if randVoice:
+			voiceId = random.choice(voiceIds)
+			print(voiceId)
+		else:
+			voiceId = voiceIds[0]
+
+		# Decide whether or not to whisper
+		if random.random() <= whisperFreq:
+			whisperSecret = True
+		else:
+			whisperSecret = False
+
+		# Prepare secret
+		if translate_lang:
+			translation = translate_client.translate(secret['text'], target_language=target_lang, format_='text')
+			secretText = translation['translatedText']
+		elif language == 'it':
+			secretText = secret['italianString']
+		elif language == 'de':
+			secretText = secret['germanString']
+		elif language == 'en':
+			secretText = secret['englishString']
+
+		if ssml:
+			secretText = utils.createSSML(secretText, sentencePause=True, whisper=whisperSecret)
+		else:
+			secretText = secret['text']
+
+		# Speak and record secret
+		pollySpeech(
+			polly,
+			text=secretText,
+			textType=textType,
+			voiceId=voiceId,
+			outputFile='{}/secret-{}'.format(mp3path,i),
+			speak=True)
+
+	if concatSecretMp3s:
+		# Merge all secret mp3s into one merged mp3
+		print('Now concatenating mp3s...')
+		concatMp3(mp3path + '/', file_padding=mp3_padding)
 
 # polly = newSession()
 # pollySpeech(polly,text='See? Another secret.',voiceId='Amy',speak=True)

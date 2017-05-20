@@ -10,6 +10,7 @@ import json
 import csv
 import collections
 import random
+import datetime
 from pprint import pprint
 from six import string_types
 from nltk import tokenize
@@ -60,7 +61,7 @@ def addModifiedTranslatedSecretsToJSON(csvfile, secrets, fieldname, datapath_tra
 			secrets[idx]['language'] = row[3]
 			if row[4] == 'yes':
 				secrets[idx]['publish'] = False
-				
+
 	# Write json to file
 	with open(datapath_translate, 'w') as f:	
 		# Compact: one dict per line	
@@ -121,6 +122,24 @@ def createUniqueFilename(fname):
 			else:
 				idx+=1
 		return new_name
+	elif os.path.isdir(fname):
+		unique_fname = False
+		idx = 0
+		f_base = fname
+		while unique_fname is False:
+			new_name = '{}-{}'.format(f_base, idx)
+			if not os.path.isdir(new_name):
+				unique_fname = True
+			else:
+				idx+=1
+		return new_name
 	else:
 		return fname
 
+# Creates timestamped directory within a base directory
+def createTimestampedDir(basepath):
+	now = datetime.datetime.now()
+	ts_path = '{}{}'.format(basepath,now.strftime('%Y-%m-%d-%H-%M'))
+	ts_path = createUniqueFilename(ts_path)
+	os.mkdir(ts_path)
+	return ts_path

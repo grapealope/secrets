@@ -98,6 +98,8 @@ def main(argv):
 			secretText = secret['italianString']
 		elif language == 'de':
 			secretText = secret['germanString']
+		elif language == 'en':
+			secretText = secret['englishString']
 
 		if ssml:
 			secretText = utils.createSSML(secretText, sentencePause=True, whisper=False)
