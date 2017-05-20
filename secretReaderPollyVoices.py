@@ -79,6 +79,10 @@ def main(argv):
 		secret = utils.convertUnicode(secrets[idx])
 		pprint(secret)
 
+		# Skip this secret if it isn't slated for publishing
+		if not secret['publish']:
+			continue
+
 		# Choose voice
 		if randVoice:
 			voiceId = random.choice(voiceIds)

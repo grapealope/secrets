@@ -48,6 +48,31 @@ def addTranslatedSecretsToJSON(csvfile, secrets, fieldname, datapath_translate, 
 			# Each field gets its own line
 			json.dump(secrets, f, sort_keys=True, indent=4, separators=(',', ': ')) 
 
+# Take in a csv file with translated secrets, append these to existing JSON for secrets
+# Use this version of the function to take in the intended language and whether the secret should be used
+def addModifiedTranslatedSecretsToJSON(csvfile, secrets, fieldname, datapath_translate, compact=True):
+	with open(csvfile) as f:
+		reader = csv.reader(f)
+		headers = next(reader)
+		for idx, row in enumerate(reader):
+			print(idx, row[2])
+			secrets[idx][fieldname] = row[2]
+			secrets[idx]['language'] = row[3]
+			if row[4] == 'yes':
+				secrets[idx]['publish'] = False
+				
+	# Write json to file
+	with open(datapath_translate, 'w') as f:	
+		# Compact: one dict per line	
+		if compact:
+			# Separate dicts by commas and new lines
+			strs = [json.dumps(secretdict, sort_keys=True) for secretdict in secrets]
+			s = "[%s]" % ",\n".join(strs)		
+			f.write(s)
+		else:
+			# Each field gets its own line
+			json.dump(secrets, f, sort_keys=True, indent=4, separators=(',', ': ')) 
+
 # Take in secrets, translate to specified language and export to a csv
 def translateToCSV(secrets, csvfile, target_lang):
 	translate_client = translate.Client()
