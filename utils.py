@@ -15,7 +15,7 @@ import re
 from pprint import pprint
 from six import string_types
 from nltk import tokenize
-from google.cloud import translate
+# from google.cloud import translate
 
 # Take in text, create SSML version (synthetic speech markup language) for use 
 # with Amazon's Polly API

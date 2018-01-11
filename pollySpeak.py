@@ -24,11 +24,20 @@ def newSession(profile='default'):
 	polly = session.client("polly")
 	return polly
 
-def pollySpeech(polly, text='', outputFormat='mp3', voiceId='Joanna', outputFile='pollySpeech',speak=False, textType='text'):
+def pollySpeech(polly, 
+				text='', 
+				outputFormat='mp3', 
+				voiceId='Joanna', 
+				outputFile='pollySpeech',
+				speak=False, 
+				textType='text',
+				verbose=False):
 	try:
 		# Request speech synthesis
 		response = polly.synthesize_speech(Text=text, OutputFormat=outputFormat, VoiceId=voiceId, TextType=textType)
 		pprint(response)
+		if verbose:
+			print ''
 	except (BotoCoreError, ClientError) as error:
 		# The service returned an error, exit gracefully
 		print(error)
@@ -47,6 +56,8 @@ def pollySpeech(polly, text='', outputFormat='mp3', voiceId='Joanna', outputFile
 				with open(output, "wb") as file:
 					file.write(stream.read())
 					print('Wrote stream to {}'.format(output))
+					if verbose:
+						print ''
 			except IOError as error:
 				# Could not write to file, exit gracefully
 				print(error)
@@ -67,7 +78,8 @@ def speakSecrets(secrets, voiceIds, mp3path,
 				 language='en', 
 				 target_lang='en',
 				 concatSecretMp3s=True,
-				 mp3_padding=1500):
+				 mp3_padding=1500,
+				 verbose=False):
 						
 	# create a new session
 	polly = newSession()
@@ -84,6 +96,10 @@ def speakSecrets(secrets, voiceIds, mp3path,
 		else:
 			idx = i
 		secret = utils.convertUnicode(secrets[idx])
+		if verbose:
+			print ''
+			print 'Processing secret #{}.'.format(idx)
+			print ''
 		pprint(secret)
 
 		# Skip this secret if it isn't slated for publishing
@@ -93,13 +109,21 @@ def speakSecrets(secrets, voiceIds, mp3path,
 		# Choose voice
 		if randVoice:
 			voiceId = random.choice(voiceIds)
-			print(voiceId)
+			if verbose:
+				print ''
+				print '{} is speaking this secret'.format(voiceId)
+				print ''			
+			else:
+				print(voiceId)
 		else:
 			voiceId = voiceIds[0]
 
 		# Decide whether or not to whisper
 		if random.random() <= whisperFreq:
 			whisperSecret = True
+			if verbose:
+				print 'This secret is being whispered.'
+				print ''			
 		else:
 			whisperSecret = False
 
@@ -126,11 +150,14 @@ def speakSecrets(secrets, voiceIds, mp3path,
 			textType=textType,
 			voiceId=voiceId,
 			outputFile='{}/secret-{}'.format(mp3path,i),
-			speak=True)
+			speak=True,
+			verbose=verbose)
 
 	if concatSecretMp3s:
 		# Merge all secret mp3s into one merged mp3
+		print ''
 		print('Now concatenating mp3s...')
+		print ''
 		concatMp3(mp3path + '/', file_padding=mp3_padding)
 
 # polly = newSession()

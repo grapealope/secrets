@@ -22,7 +22,8 @@ from pollySpeak import newSession, pollySpeech, speakSecrets
 # Defaults (integrate this into main, and with keyword args)
 from params import *
 
-datapath = '/Users/kalmar/Documents/code/secrets/secrets_data/secrets_edit_italian.json'
+# datapath = '/Users/kalmar/Documents/code/secrets/secrets_data/secrets_edit_italian.json'
+datapath = '/Users/kalmar/Documents/code/secrets/secrets_data/secrets_english.json'
 
 secrets = []
 with open(datapath) as data_file:    
@@ -48,6 +49,9 @@ speakSecrets(english_secrets[137:138], voiceIds, createTimestampedDir(mp3path_ba
 speakSecrets(english_secrets[138:139], voiceIds, createTimestampedDir(mp3path_base), randVoice=True)
 
 
+speakSecrets(english_secrets[0:500], voiceIds, createTimestampedDir(mp3path_base), randVoice=True, verbose=True)
+
+
 # ------------------------------------------ #
 # Italian 
 
@@ -70,6 +74,25 @@ speakSecrets(italian_secrets[100:], voiceIds, createTimestampedDir(mp3path_base)
 
 # ------------------------------------------ #
 # Fix timing
+
+mp3path = '/Users/kalmar/Documents/code/secrets/audio/2017-11-10-test'
+concatMp3(mp3path + '/', file_padding=45000)
+concatMp3(mp3path + '/', file_padding='random')
+
+mp3path = '/Users/kalmar/Documents/code/secrets/audio/2017-11-10-1'
+concatMp3(mp3path + '/', file_padding='random')
+
+mp3path = '/Users/kalmar/Documents/code/secrets/audio/2017-11-10-2'
+concatMp3(mp3path + '/', file_padding='random')
+
+mp3path = '/Users/kalmar/Documents/code/secrets/audio/2017-11-10-3'
+concatMp3(mp3path + '/', file_padding='random')
+
+mp3path = '/Users/kalmar/Documents/code/secrets/audio/2017-11-10-4'
+concatMp3(mp3path + '/', file_padding='random')
+
+mp3path = '/Users/kalmar/Documents/code/secrets/audio/2017-11-10-5'
+concatMp3(mp3path + '/', file_padding='random')
 
 mp3path = '/Users/kalmar/Documents/code/secrets/audio/2017-05-20-03-25'
 concatMp3(mp3path + '/', file_padding=mp3_padding)
