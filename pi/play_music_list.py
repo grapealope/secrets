@@ -19,8 +19,7 @@ def play_next_song():
 	pygame.mixer.music.play()
 
 # Change to the directory with the mp3 files
-#mp3_dir = '/media/usb1/secrets/'
-mp3_dir = '/media/usb1/foo/'
+mp3_dir = '/media/usb1/secrets/'
 
 try:
 	os.chdir(mp3_dir)

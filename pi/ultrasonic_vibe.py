@@ -1,28 +1,39 @@
 #!/usr/bin/python
 
-#Libraries
+# Libraries
 import RPi.GPIO as GPIO
 import time
 import pygame
 from time import sleep
 import random
 
-#GPIO Mode (BOARD / BCM)
+# GPIO Mode (BOARD / BCM)
 GPIO.setmode(GPIO.BCM)
 
-#set GPIO Pins
+# Set GPIO Pins
 GPIO_TRIGGER = 18
 GPIO_ECHO = 24
 LED_1 = 23
 MOTOR_GREEN = 17
 MOTOR_WHITE = 27
 
-#set GPIO direction (IN / OUT)
+# Set GPIO direction (IN / OUT)
 GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
 GPIO.setup(GPIO_ECHO, GPIO.IN)
 GPIO.setup(LED_1, GPIO.OUT)
 GPIO.setup(MOTOR_GREEN, GPIO.OUT)
 GPIO.setup(MOTOR_WHITE, GPIO.OUT)
+
+# Initialize outputs
+GPIO.output(LED_1, GPIO.LOW)
+GPIO.output(MOTOR_GREEN, GPIO.LOW)
+GPIO.output(MOTOR_WHITE, GPIO.LOW)
+
+# Set effect parameters
+EFFECT_DURATION = 0.7
+VIBE_EFFECT = True
+LIGHT_EFFECT = False
+SOUND_VOLUME = 0.5
 
 # Initialize pygame
 pygame.init()
@@ -33,10 +44,10 @@ sound_hans = pygame.mixer.Sound("/home/pi/code/sounds/danke-hans.wav")
 sound_vicki = pygame.mixer.Sound("/home/pi/code/sounds/danke-vicki.wav")
 sound_marlene = pygame.mixer.Sound("/home/pi/code/sounds/danke-marlene.wav")
 
-# Initialize outputs
-GPIO.output(LED_1, GPIO.LOW)
-GPIO.output(MOTOR_GREEN, GPIO.LOW)
-GPIO.output(MOTOR_WHITE, GPIO.LOW)
+# Set the sound level
+sounds = [sound_coin, sound_burp, sound_hans, sound_vicki, sound_marlene]
+for sound in sounds:
+	sound.set_volume(SOUND_VOLUME)
 
 def distance():
     # set Trigger to HIGH
@@ -89,12 +100,14 @@ if __name__ == '__main__':
 		elif die_roll == 100:
 			print("Playing sound now: jelly baby")
 			sound_burp.play()
-		print("Turning on LED")
-		GPIO.output(LED_1, GPIO.HIGH)
-		print("Turning on vibe motors")
-		GPIO.output(MOTOR_GREEN, GPIO.HIGH)
-		GPIO.output(MOTOR_WHITE, GPIO.HIGH)
-		sleep(2)
+		if LIGHT_EFFECT:
+			print("Turning on LED")
+			GPIO.output(LED_1, GPIO.HIGH)
+		if VIBE_EFFECT:
+			print("Turning on vibe motors")
+			GPIO.output(MOTOR_GREEN, GPIO.HIGH)
+			GPIO.output(MOTOR_WHITE, GPIO.HIGH)
+		sleep(EFFECT_DURATION)
 		if die_roll < 10:
 			sound_vicki.stop()
 		elif (die_roll >= 10) and (die_roll < 20):
@@ -105,11 +118,13 @@ if __name__ == '__main__':
                         sound_coin.stop()
 		elif die_roll == 100:
 			sound_burp.stop()
-		print("Turning off LED")
-		GPIO.output(LED_1, GPIO.LOW)
-		print("Turning off vibe motors")
-		GPIO.output(MOTOR_GREEN, GPIO.LOW)
-		GPIO.output(MOTOR_WHITE, GPIO.LOW)
+		if LIGHT_EFFECT:
+			print("Turning off LED")
+			GPIO.output(LED_1, GPIO.LOW)
+		if VIBE_EFFECT:
+			print("Turning off vibe motors")
+			GPIO.output(MOTOR_GREEN, GPIO.LOW)
+			GPIO.output(MOTOR_WHITE, GPIO.LOW)
 
     # Reset by pressing CTRL + C
     except KeyboardInterrupt:
