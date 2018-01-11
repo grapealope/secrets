@@ -37,7 +37,7 @@ if language=='en':
 elif language=='it':
 	voiceIds = ['Carla', 'Giorgio']
 elif language=='de':
-	voiceIds = ['Marlene', 'Hans']
+	voiceIds = ['Vicki', 'Marlene', 'Hans']
 
 voice = voiceIds[0]
 
