@@ -16,6 +16,7 @@ from playsound import playsound
 import utils
 import random
 from concatMp3 import concatMp3
+from collections import OrderedDict
 
 def newSession(profile='default'):
 	# Create a client using the credentials and region defined in the [adminuser]
@@ -50,7 +51,8 @@ def pollySpeech(polly,
 		# at the end of the with statement's scope.
 		with closing(response["AudioStream"]) as stream:
 			# output = os.path.join(gettempdir(), "speech.mp3")
-			output = outputFile + '.' + outputFormat
+			# output = outputFile + '.' + outputFormat
+			output = utils.createUniqueFilename(outputFile + '.' + outputFormat)
 			try:
 				# Open a file for writing the output as a binary stream
 				with open(output, "wb") as file:
@@ -79,33 +81,41 @@ def speakSecrets(secrets, voiceIds, mp3path,
 				 target_lang='en',
 				 concatSecretMp3s=True,
 				 mp3_padding=1500,
-				 verbose=False):
+				 verbose=False,
+				 outputFileIdx=None,
+				 createLog=False,
+				 attenuation_list = None
+				 ):
 						
 	# create a new session
 	polly = newSession()
-
+	
+	secretsLog = []
 	if ssml:
 		textType = 'ssml'
 	else:
 		textType = 'text'
-
+		
 	for i in range(0, len(secrets)):
 		# Choose a new secret 
 		if shuffleSecrets:
 			idx = random.randint(0,len(secrets))
 		else:
 			idx = i
+		# if len(secrets) == 1:
+		# 	secret = utils.convertUnicode(secrets)
+		# else:
 		secret = utils.convertUnicode(secrets[idx])
 		if verbose:
 			print ''
 			print 'Processing secret #{}.'.format(idx)
 			print ''
 		pprint(secret)
-
+		
 		# Skip this secret if it isn't slated for publishing
 		if not secret['publish']:
 			continue
-
+			
 		# Choose voice
 		if randVoice:
 			voiceId = random.choice(voiceIds)
@@ -117,7 +127,7 @@ def speakSecrets(secrets, voiceIds, mp3path,
 				print(voiceId)
 		else:
 			voiceId = voiceIds[0]
-
+			
 		# Decide whether or not to whisper
 		if random.random() <= whisperFreq:
 			whisperSecret = True
@@ -126,7 +136,7 @@ def speakSecrets(secrets, voiceIds, mp3path,
 				print ''			
 		else:
 			whisperSecret = False
-
+			
 		# Prepare secret
 		if translate_lang:
 			translation = translate_client.translate(secret['text'], target_language=target_lang, format_='text')
@@ -136,29 +146,55 @@ def speakSecrets(secrets, voiceIds, mp3path,
 		elif language == 'de':
 			secretText = secret['germanString']
 		elif language == 'en':
-			secretText = secret['englishString']
-
+			secretText = secret['englishString']	
+		if createLog:
+			secretLog = OrderedDict()
+			secretLog['idx'] = i
+			secretLog['secretIdx'] = secret['csv_id']
+			secretLog['voice'] = voiceId
+			secretLog['whisperSecret'] = whisperSecret
+			secretLog['attenuation'] = 0
+			secretLog['filePadding'] = 0
+			secretLog['secret'] = secretText			
+			secretsLog.append(secretLog)			
+			
 		if ssml:
 			secretText = utils.createSSML(secretText, sentencePause=True, whisper=whisperSecret)
 		else:
 			secretText = secret['text']
-
+			
+		# Choose format of output file based on whether we're generating our own indices
+		if outputFileIdx:
+			outputFile = '{}/secret-{}'.format(mp3path, outputFileIdx)
+		else:
+			outputFile = '{}/secret-{}'.format(mp3path,i)
+			
 		# Speak and record secret
 		pollySpeech(
 			polly,
 			text=secretText,
 			textType=textType,
 			voiceId=voiceId,
-			outputFile='{}/secret-{}'.format(mp3path,i),
+			outputFile=outputFile,
 			speak=True,
 			verbose=verbose)
-
 	if concatSecretMp3s:
 		# Merge all secret mp3s into one merged mp3
 		print ''
 		print('Now concatenating mp3s...')
 		print ''
-		concatMp3(mp3path + '/', file_padding=mp3_padding)
+		attenuations_used, file_padding_used = concatMp3(mp3path + '/', file_padding=mp3_padding, attenuation_list=attenuation_list)
+	if createLog:
+		for i, attenuation in enumerate(attenuations_used):
+			secretsLog[i]['attenuation'] = attenuation
+			secretsLog[i]['filePadding'] = file_padding_used[i]
+		# Write secrets log to file
+		secretsLogFile = '{}/secretsLog.json'.format(mp3path)
+		print('Saving {}...'.format(secretsLogFile))
+		with open(secretsLogFile, 'w') as f:	
+	  		strs = [json.dumps(secretdict) for secretdict in secretsLog]
+			s = "[%s]" % ",\n".join(strs)		
+			f.write(s)
 
 # polly = newSession()
 # pollySpeech(polly,text='See? Another secret.',voiceId='Amy',speak=True)

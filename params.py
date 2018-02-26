@@ -13,7 +13,7 @@ mp3path_base = '/Users/kalmar/Documents/code/secrets/audio/'		  # Where to store
 shuffleSecrets = False		# Shuffle the order of the secrets?
 speak = True				# Speak secrets?
 ssml = True					# Use speech synthesis markup language?
-whisperFreq = 0.1			# What percentage of the secrets should be whispered?
+whisperFreq = 0.15			# What percentage of the secrets should be whispered?
 mp3_padding = 1500			# Buffer between mp3 files, for concatenated mp3
 concatSecretMp3s = True     # Concatenate the individual mp3 files in a group
 
@@ -24,20 +24,25 @@ datapath = '/Users/kalmar/Documents/code/secrets/secrets_data/secrets_edit_rk.js
 
 translate_lang = False
 
-#language = 'en'
-language = 'it'
-#language = 'de'
+language = 'en'
+# language = 'it'
+# language = 'de'
 
-target_lang = 'it'
-#target_lang = 'de'
+target_lang = 'en'
+# target_lang = 'it'
+# target_lang = 'de'
+
+englishVoiceIds = ['Joanna', 'Kendra', 'Amy', 'Joey', 'Brian']	
+italianVoiceIds = ['Carla', 'Giorgio']
+germanVoiceIds = ['Vicki', 'Marlene', 'Hans']
 
 if language=='en':
 	# voiceIds = ['Joanna', 'Salli', 'Kimberly', 'Kendra', 'Amy', 'Ivy', 'Justin', 'Joey', 'Brian']
-	voiceIds = ['Joanna', 'Kendra', 'Amy', 'Joey', 'Brian']		
+	voiceIds = englishVoiceIds
 elif language=='it':
-	voiceIds = ['Carla', 'Giorgio']
+	voiceIds = italianVoiceIds
 elif language=='de':
-	voiceIds = ['Vicki', 'Marlene', 'Hans']
+	voiceIds = germanVoiceIds
 
 voice = voiceIds[0]
 

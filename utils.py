@@ -47,24 +47,29 @@ def addTranslatedSecretsToJSON(csvfile, secrets, fieldname, datapath_translate, 
 			secrets[idx][fieldname] = row[2]
 
 	# Write json to file
-	with open(datapath_translate, 'w') as f:	
-		# Compact: one dict per line	
-		if compact:
-			# Separate dicts by commas and new lines
-			strs = [json.dumps(secretdict, sort_keys=True) for secretdict in secrets]
-			s = "[%s]" % ",\n".join(strs)		
-			f.write(s)
-		else:
-			# Each field gets its own line
-			json.dump(secrets, f, sort_keys=True, indent=4, separators=(',', ': ')) 
+	writeJsonToFile(datapath_translate, secrets, compact=compact)
+	
+	# with open(datapath_translate, 'w') as f:	
+	# 	# Compact: one dict per line	
+	# 	if compact:
+	# 		# Separate dicts by commas and new lines
+	# 		strs = [json.dumps(secretdict, sort_keys=True) for secretdict in secrets]
+	# 		s = "[%s]" % ",\n".join(strs)		
+	# 		f.write(s)
+	# 	else:
+	# 		# Each field gets its own line
+	# 		json.dump(secrets, f, sort_keys=True, indent=4, separators=(',', ': ')) 
 
 # Take in a csv file with translated secrets, append these to existing JSON for secrets
 # Use this version of the function to take in the intended language and whether the secret should be used
-def addModifiedTranslatedSecretsToJSON(csvfile, secrets, fieldname, datapath_translate, compact=True):
+def addModifiedTranslatedSecretsToJSON(csvfile, secrets, fieldname, datapath_translate, fixEnglish=False, compact=True):
 	with open(csvfile) as f:
 		reader = csv.reader(f)
 		headers = next(reader)
 		for idx, row in enumerate(reader):
+			if fixEnglish:
+				secrets[idx]['englishString'] = row[1]
+				secrets[idx]['text'] = row[1]			
 			print(idx, row[2])
 			secrets[idx][fieldname] = row[2]
 			secrets[idx]['language'] = row[3]
@@ -72,7 +77,48 @@ def addModifiedTranslatedSecretsToJSON(csvfile, secrets, fieldname, datapath_tra
 				secrets[idx]['publish'] = False
 
 	# Write json to file
-	with open(datapath_translate, 'w') as f:	
+	writeJsonToFile(datapath_translate, secrets, compact=compact)
+
+	# print('Saving {}...'.format(datapath_translate))
+	# with open(datapath_translate, 'w') as f:	
+	# 	# Compact: one dict per line	
+	# 	if compact:
+	# 		# Separate dicts by commas and new lines
+	# 		strs = [json.dumps(secretdict, sort_keys=True) for secretdict in secrets]
+	# 		s = "[%s]" % ",\n".join(strs)		
+	# 		f.write(s)
+	# 	else:
+	# 		# Each field gets its own line
+	# 		json.dump(secrets, f, sort_keys=True, indent=4, separators=(',', ': ')) 
+
+def createSecretsJsonFromCSV(csvfile, datapath, compact=True):
+	with open(csvfile) as f:
+		reader = csv.reader(f)
+		headers = next(reader)
+		secrets = []
+		for idx, row in enumerate(reader):
+			secret = {}
+			secret['csv_id'] = row[0]
+			secret['createdAt'] = {'$date': None}
+			secret['englishString'] = row[1]
+			secret['lang'] = 'en'
+			secret['owner'] = 'na'
+			secret['publish'] = 'true'
+			secret['readyToPrintOne'] = 'false'
+			secret['readyToPrintTwo'] = 'false'
+			secret['source'] = 'remote'
+			secret['status'] = 'ok'
+			secret['text'] = row[1]	
+			print(idx, row[1])
+			secrets.append(secret)
+
+	# Write json to file
+	writeJsonToFile(datapath, secrets, compact=compact)
+
+def writeJsonToFile(datapath, secrets, compact=True):
+	# Write json to file
+	print('Saving {}...'.format(datapath))
+	with open(datapath, 'w') as f:	
 		# Compact: one dict per line	
 		if compact:
 			# Separate dicts by commas and new lines
@@ -152,3 +198,21 @@ def createTimestampedDir(basepath):
 	ts_path = createUniqueFilename(ts_path)
 	os.mkdir(ts_path)
 	return ts_path
+
+
+# Flatten a nested list
+# source: https://rightfootin.blogspot.com/2006/09/more-on-python-flatten.html
+def flatten(l, ltypes=(list, tuple)):
+    ltype = type(l)
+    l = list(l)
+    i = 0
+    while i < len(l):
+        while isinstance(l[i], ltypes):
+            if not l[i]:
+                l.pop(i)
+                i -= 1
+                break
+            else:
+                l[i:i + 1] = l[i]
+        i += 1
+    return ltype(l)
